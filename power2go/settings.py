@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'base',
-    'django.contrib.contenttypes'
+    'graphene_django',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +52,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'power2go.urls'
+
+GRAPHENE = {
+    'SCHEMA': 'power2go.schema.schema',
+}
 
 TEMPLATES = [
     {
