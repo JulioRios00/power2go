@@ -2,6 +2,11 @@ import graphene
 from graphene_django import DjangoObjectType
 from .models import User, Contract
 
+
+##TESTAR TODAS AS MUTATIONS E QUERIES!!!!!!!!!!!!!!!!
+
+#Types
+
 class UserType(DjangoObjectType):
     class Meta:
         model = User
@@ -11,7 +16,9 @@ class ContractType(DjangoObjectType):
     class Meta:
         model = Contract
         fields = ('id', 'description', 'user', 'fidelity', 'amount', 'created_at',)
-        
+      
+# Queries  
+
 class Query(graphene.ObjectType):
     users = graphene.List(UserType)
     contracts = graphene.List(ContractType)
@@ -54,7 +61,8 @@ class Query(graphene.ObjectType):
         except User.DoesNotExist:
             return [] # definir exception dedicada?
         
-    
+# Mutations
+
 class CreateUser(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
@@ -70,7 +78,7 @@ class CreateUser(graphene.Mutation):
         
         except Exception:
             return CreateUser(user=None, message=Exception)
-    
+        
 class CreateContract(graphene.Mutation):
     class Arguments:
         description = graphene.String(required=True)
@@ -93,8 +101,101 @@ class CreateContract(graphene.Mutation):
         except Exception:
             return CreateContract(contract=None, message=Exception)
     
+class UpdateUser(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        name = graphene.String()
+        email = graphene.String()
+        
+    user = graphene.Field(UserType)
+    
+    def mutate(self, info, id, name=None, email=None):
+        try:
+            user = User.objects.get(id=id)
+            
+            if name:
+                user.name = name
+            if email:
+                user.email = email
+                
+            user.save()
+            return UpdateUser(user=user)
+        
+        except User.DoesNotExist:
+            return UpdateUser(user=None, message="User don't exist.")
+               
+        except Exception:
+            return UpdateUser(user=None, message=Exception)
+
+class UpdateContract(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        description = graphene.String()
+        fidelity = graphene.Int()
+        amount = graphene.Float()
+        
+    contract = graphene.Field(ContractType)
+    
+    def mutate(self, info, id, description=None, fidelity=None, amount=None):
+        try:
+            contract = Contract.objects.get(id=id)
+            
+            if description:
+                contract.description = description
+            if fidelity is not None:
+                contract.fidelity = fidelity
+            if amount is not None:
+                contract.amount = amount
+                
+            contract.save()
+            return UpdateContract(contract=contract, message="Contract updated successfully")
+        
+        except Contract.DoesNotExist:
+            return UpdateContract(contract=None, message="Contract don't exist.")
+        
+        except Exception:
+            return UpdateContract(contract=None, message={str(Exception)})
+        
+class DeleteUser(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        
+    success_deletion = graphene.Boolean()
+        
+    def mutate(self, info, id):
+        try:
+            User.objects.get(id=id).delete()
+            return DeleteUser(success_deletion=True, message="User deleted successfully.")
+        
+        except User.DoesNotExist:
+            return DeleteUser(success_deletion=False, message="User don't exist.")
+        
+        except Exception:
+            return DeleteUser(success_deletion=False, message=str(Exception))
+
+class DeleteContract(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        
+    success_deletion = graphene.Boolean()
+    
+    def mutate(self, info, id):
+        try:
+            Contract.objects.get(id=id).delete()
+            return DeleteContract(success_deletion=True, message="Contract deleted successfully.")
+        
+        except Contract.DoesNotExist:
+            return DeleteContract(success_deletion=False, message="Contract don't exist.")
+        
+        except Exception:
+            return DeleteContract(success_deletion=False, message=str(Exception))
+        
+        
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     create_contract = CreateContract.Field()
+    update_user = UpdateUser.Field()
+    delete_user = DeleteUser.Field()
+    delete_contract = DeleteContract.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
