@@ -13,24 +13,18 @@ class UserType(DjangoObjectType):
         fields =  ('id', 'name', 'email', 'created_at')
         
 class ContractType(DjangoObjectType):
+    user_id = graphene.ID()
     class Meta:
         model = Contract
         fields = ('id', 'description', 'user', 'fidelity', 'amount', 'created_at',)
         
 # Inputs
-
+class GetUserInput(graphene.InputObjectType):
+    id = graphene.ID(required=True)
+    
 class CreateUserInput(graphene.InputObjectType):
     name = graphene.String(required=True)
     email = graphene.String(required=True)
-    
-class CreateContractInput(graphene.InputObjectType):
-    description = graphene.String(required=True)
-    user_id = graphene.ID(required=True)
-    fidelity = graphene.Int(required=True)
-    amount = graphene.Float(required=True)
-    
-class GetUserInput(graphene.InputObjectType):
-    id = graphene.ID(required=True)
 
 class UpdateUserInput(graphene.InputObjectType):
     id = graphene.ID(required=True)
@@ -39,6 +33,24 @@ class UpdateUserInput(graphene.InputObjectType):
     
 class DeleteUserInput(graphene.InputObjectType):
     id = graphene.ID(required=True)
+         
+class CreateContractInput(graphene.InputObjectType):
+    description = graphene.String(required=True)
+    user_id = graphene.ID(required=True)
+    fidelity = graphene.Int(required=True)
+    amount = graphene.Float(required=True)
+    
+class GetContractInput(graphene.InputObjectType):
+    id = graphene.ID(required=True)
+    
+class GetContractWithoutNestedUserInput(graphene.InputObjectType): 
+    id = graphene.ID(required=True)
+
+class UpdateContractInput(graphene.InputObjectType):
+    id = graphene.ID(required=True)
+    description = graphene.String()
+    fidelity = graphene.Int()
+    amount = graphene.Float()
       
 # Queries  
 
@@ -46,9 +58,15 @@ class Query(graphene.ObjectType):
     users = graphene.List(UserType)
     contracts = graphene.List(ContractType)
     get_user = graphene.Field(UserType, input=GetUserInput(required=True))
-    get_contract = graphene.Field(ContractType, id=graphene.ID(required=True))
-    get_contract_without_nested_user = graphene.Field(ContractType, id=graphene.ID(required=True))
-    getContractsByUser = graphene.List(ContractType, id=graphene.ID(required=True))
+    get_contract = graphene.Field(ContractType, input=GetContractInput(required=True))
+    get_contract_without_nested_user = graphene.Field(
+				ContractType, 
+				input=GetContractWithoutNestedUserInput(required=True)
+    )
+    getContractsByUser = graphene.List(
+				ContractType, 
+				user_id=graphene.ID(required=True)
+    )
     
     # lembre de fazer try-except
     def resolve_users(self, info, **kwargs):
@@ -64,21 +82,21 @@ class Query(graphene.ObjectType):
         except User.DoesNotExist:
             return None # definir exception dedicada?
         
-    def resolve_get_contract(self, info, id):
+    def resolve_get_contract(self, info, input):
         try:
-            return Contract.objects.select_related('user').get(id=id)
+            return Contract.objects.select_related('user').get(id=input.id)
         except Contract.DoesNotExist:
             return None # definir exception dedicada?
     
-    def resolve_get_contract_without_nested_user(self, info, id):
+    def resolve_get_contract_without_nested_user(self, info, input):
         try:
-            contract = Contract.objects.get(id=id)
-            contract.user = None
+            contract = Contract.objects.get(id=input.id)
+            contract.user_id
             return contract
         except Contract.DoesNotExist:
             return None # definir exception dedicada?
     
-    def resolve_getContractsByUser(self, info, user_id):
+    def resolve_get_contracts_by_user(self, info, user_id):
         try:
             return Contract.objects.filter(user_id=user_id)
         except User.DoesNotExist:
@@ -100,32 +118,7 @@ class CreateUser(graphene.Mutation):
         
         except Exception:
             return CreateUser(user=None, message=Exception)
-        
-class CreateContract(graphene.Mutation):
-    class Arguments:
-        input = CreateContractInput(required=True)
-        
-    contract = graphene.Field(ContractType)
-    message = graphene.String()
 
-    def mutate(self, info, input):
-        try:
-            user = User.objects.get(id=input.user_id)
-            contract = Contract(
-                description=input.description, 
-                user=user, 
-                fidelity=input.fidelity, 
-                amount=input.amount
-            )
-            contract.save()
-            return CreateContract(contract=contract, message="Contract created successfully.")
-        
-        except User.DoesNotExist:
-            return CreateContract(contract=None, message="User don't exist.")
-        
-        except Exception as e:
-            return CreateContract(contract=None, message=str(e))
-    
 class UpdateUser(graphene.Mutation):
     class Arguments:
         input = UpdateUserInput(required=True)
@@ -151,37 +144,7 @@ class UpdateUser(graphene.Mutation):
         except Exception as e:
             return UpdateUser(user=None, message=str(e))
 
-class UpdateContract(graphene.Mutation):
-    class Arguments:
-        id = graphene.ID(required=True)
-        description = graphene.String()
-        fidelity = graphene.Int()
-        amount = graphene.Float()
-        
-    contract = graphene.Field(ContractType)
-    message = graphene.String()
-    
-    def mutate(self, info, id, description=None, fidelity=None, amount=None):
-        try:
-            contract = Contract.objects.get(id=id)
-            
-            if description:
-                contract.description = description
-            if fidelity is not None:
-                contract.fidelity = fidelity
-            if amount is not None:
-                contract.amount = amount
-                
-            contract.save()
-            return UpdateContract(contract=contract, message="Contract updated successfully")
-        
-        except Contract.DoesNotExist:
-            return UpdateContract(contract=None, message="Contract don't exist.")
-        
-        except Exception:
-            return UpdateContract(contract=None, message={str(Exception)})
-
-# Tratar info caso id não seja encontrado    
+# Tratar info caso id não seja encontrado  
 class DeleteUser(graphene.Mutation):
     class Arguments:
         input = DeleteUserInput(required=True)
@@ -199,6 +162,58 @@ class DeleteUser(graphene.Mutation):
         
         except Exception as e:
             return DeleteUser(success_deletion=False, message=str(e))
+      
+class CreateContract(graphene.Mutation):
+    class Arguments:
+        input = CreateContractInput(required=True)
+        
+    contract = graphene.Field(ContractType)
+    message = graphene.String()
+
+    def mutate(self, info, input):
+        try:
+            user = User.objects.get(id=input.user_id)
+            contract = Contract(
+                description=input.description, 
+                user=user, 
+                fidelity=input.fidelity, 
+                amount=input.amount
+            )
+            contract.save()
+            return CreateContract(contract=contract, message="Contract created successfully.")
+        
+        except User.DoesNotExist:
+            return CreateContract(contract=None, message="User don't exist.")
+        
+        except Exception as e:
+            return CreateContract(contract=None, message=str(e))
+    
+class UpdateContract(graphene.Mutation):
+    class Arguments:
+        input = UpdateContractInput(required=True)
+        
+    contract = graphene.Field(ContractType)
+    message = graphene.String()
+    
+    def mutate(self, info, input):
+        try:
+            contract = Contract.objects.get(id=input.id)
+            
+            if input.description:
+                contract.description = input.description
+            if input.fidelity is not None:
+                contract.fidelity = input.fidelity
+            if input.amount is not None:
+                contract.amount = input.amount
+                
+            contract.save()
+            return UpdateContract(contract=contract, message="Contract updated successfully")
+        
+        except Contract.DoesNotExist:
+            return UpdateContract(contract=None, message="Contract don't exist.")
+        
+        except Exception as e:
+            return UpdateContract(contract=None, message=str(e))
 
 class DeleteContract(graphene.Mutation):
     class Arguments:
