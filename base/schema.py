@@ -1,7 +1,7 @@
 import graphene 
 from graphene_django import DjangoObjectType
 
-from .exceptions import UserAlreadyExistsError
+from .exceptions import UserAlreadyExistsError, UserHasContractsError
 from .models import User, Contract
 
 
@@ -75,13 +75,13 @@ class Query(graphene.ObjectType):
         try:
             return User.objects.get(id=id)
         except User.DoesNotExist:
-            return None # definir exception dedicada?
+            return None 
         
     def resolve_get_contract(self, info, input):
         try:
             return Contract.objects.select_related('user').get(id=input.id)
         except Contract.DoesNotExist:
-            return None # definir exception dedicada?
+            return None 
     
     def resolve_get_contract_without_nested_user(self, info, input):
         try:
@@ -89,13 +89,13 @@ class Query(graphene.ObjectType):
             contract.user_id
             return contract
         except Contract.DoesNotExist:
-            return None # definir exception dedicada?
+            return None 
     
     def resolve_get_contracts_by_user(self, info, user_id):
         try:
             return Contract.objects.filter(user_id=user_id)
         except User.DoesNotExist:
-            return [] # definir exception dedicada?
+            return [] 
         
         
 class CreateUser(graphene.Mutation):
@@ -162,12 +162,17 @@ class DeleteUser(graphene.Mutation):
         
     def mutate(self, info, input):
         try:
-            User.objects.get(id=input.id).delete()
+            user = User.objects.get(id=input.id)
+   
+            if Contract.objects.filter(user_id=user.id).exists():
+                raise UserHasContractsError("User has contract(s) and cannot be deleted.")
+			
+            user.delete()
             return DeleteUser(success_deletion=True, message="User deleted successfully.")
-        
+			
         except User.DoesNotExist:
-            return DeleteUser(success_deletion=False, message="User don't exist.")
-        
+            return DeleteUser(success_deletion=False, message="User doesn't exist.")
+			
         except Exception as e:
             return DeleteUser(success_deletion=False, message=str(e))
       
