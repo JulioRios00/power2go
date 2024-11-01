@@ -1,8 +1,12 @@
 import graphene 
+import graphql_jwt
 from graphene_django import DjangoObjectType
-
 from .exceptions import UserAlreadyExistsError, UserHasContractsError
 from .models import User, Contract
+from graphql_jwt.decorators import login_required
+from graphql_jwt.shortcuts import get_token
+from django.contrib.auth import get_user_model
+from graphql import GraphQLError
 
 
 class UserType(DjangoObjectType):
@@ -65,6 +69,7 @@ class Query(graphene.ObjectType):
 				user_id=graphene.ID(required=True)
     )
     
+    @login_required
     def resolve_users(self, info, **kwargs):
         return User.objects.all()
     
@@ -245,14 +250,59 @@ class DeleteContract(graphene.Mutation):
         
         except Exception as e:
             return DeleteContract(success_deletion=False, message=str(e))
+   
+UserModel = get_user_model()     
+class ObtainTokenWithEmail(graphene.Mutation):
+    user = graphene.Field(UserType)
+    token = graphene.String()
+
+    class Arguments:
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    @classmethod
+    def mutate(cls, root, info, email, password):
+        user = UserModel.objects.filter(email=email).first()
+        if user is None or not user.check_password(password):
+            raise GraphQLError("Invalid email or password")
+
+        token = get_token(user)
         
+        return cls(token=token, user=user)
+
+class RegisterUser(graphene.Mutation):
+    user = graphene.Field(UserType)
+    message = graphene.String()
+
+    class Arguments:
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    def mutate(self, info, email, password):    
+        if UserModel.objects.filter(email=email).exists():
+            return RegisterUser(user=None, message="Email already exists.") 
         
-class Mutation(graphene.ObjectType):
+        if UserModel.objects.filter(username=email).exists():
+            return RegisterUser(user=None, message="Username already exists.") 
+        user = UserModel(email=email)
+        user.set_password(password)
+        user.save()
+        
+        return RegisterUser(user=user, message="User registered successfully")
+
+class AuthMutation(graphene.ObjectType):
+    obtain_token_with_email = ObtainTokenWithEmail.Field()
+    verify_token = graphql_jwt.Verify.Field()   
+    refresh_token = graphql_jwt.Refresh.Field()     
+
+class Mutation(AuthMutation, graphene.ObjectType):
+    token_auth = ObtainTokenWithEmail.Field()
     create_user = CreateUser.Field()
     create_contract = CreateContract.Field()
     update_user = UpdateUser.Field()
     delete_user = DeleteUser.Field()
     delete_contract = DeleteContract.Field()
     update_contract = UpdateContract.Field()
+    register_user = RegisterUser.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

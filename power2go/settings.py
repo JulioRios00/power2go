@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'base',
     'graphene_django',
+    'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
 ]
 
 MIDDLEWARE = [
@@ -55,7 +56,15 @@ ROOT_URLCONF = 'power2go.urls'
 
 GRAPHENE = {
     'SCHEMA': 'power2go.schema.schema',
+    'MIDDLEWARE': [
+		'graphql_jwt.middleware.JSONWebTokenMiddleware',
+	]
 }
+
+AUTHENTICATION_BACKENDS = [
+	'graphql_jwt.backends.JSONWebTokenBackend',
+ 	'django.contrib.auth.backends.ModelBackend',
+]
 
 TEMPLATES = [
     {
