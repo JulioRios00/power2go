@@ -122,7 +122,7 @@
                     "Properties": {
                       "Code": {
                         "S3Bucket": "bravosuperbucket",
-                        "S3Key": "serverless/django-graphQL-api/stg/1730760253748-2024-11-04T22:44:13.748Z/django-graphQL-api.zip"
+                        "S3Key": "serverless/django-graphQL-api/stg/1730806189301-2024-11-05T11:29:49.301Z/django-graphQL-api.zip"
                       },
                       "Handler": "wsgi_handler.handler",
                       "Runtime": "python3.9",
@@ -277,7 +277,7 @@
                       "ApiLambdaPermissionApiGateway"
                     ]
                   },
-                  "ApiGatewayDeployment1730760251566": {
+                  "ApiGatewayDeployment1730806187326": {
                     "Type": "AWS::ApiGateway::Deployment",
                     "Properties": {
                       "RestApiId": {
@@ -425,7 +425,7 @@
                 ".serverless-wsgi"
               ],
               "artifact": "/home/julioaraujo00/projects/power_to_go/power2go/power2go/.serverless/django-graphQL-api.zip",
-              "artifactDirectoryName": "serverless/django-graphQL-api/stg/1730760253748-2024-11-04T22:44:13.748Z"
+              "artifactDirectoryName": "serverless/django-graphQL-api/stg/1730806189301-2024-11-05T11:29:49.301Z"
             }
           },
           "configFileDirPath": "/home/julioaraujo00/projects/power_to_go/power2go/power2go",
@@ -558,7 +558,7 @@
                     "Properties": {
                       "Code": {
                         "S3Bucket": "bravosuperbucket",
-                        "S3Key": "serverless/django-graphQL-api/stg/1730760253748-2024-11-04T22:44:13.748Z/django-graphQL-api.zip"
+                        "S3Key": "serverless/django-graphQL-api/stg/1730806189301-2024-11-05T11:29:49.301Z/django-graphQL-api.zip"
                       },
                       "Handler": "wsgi_handler.handler",
                       "Runtime": "python3.9",
@@ -713,7 +713,7 @@
                       "ApiLambdaPermissionApiGateway"
                     ]
                   },
-                  "ApiGatewayDeployment1730760251566": {
+                  "ApiGatewayDeployment1730806187326": {
                     "Type": "AWS::ApiGateway::Deployment",
                     "Properties": {
                       "RestApiId": {
@@ -861,7 +861,7 @@
                 ".serverless-wsgi"
               ],
               "artifact": "/home/julioaraujo00/projects/power_to_go/power2go/power2go/.serverless/django-graphQL-api.zip",
-              "artifactDirectoryName": "serverless/django-graphQL-api/stg/1730760253748-2024-11-04T22:44:13.748Z"
+              "artifactDirectoryName": "serverless/django-graphQL-api/stg/1730806189301-2024-11-05T11:29:49.301Z"
             }
           },
           "configFileDirPath": "/home/julioaraujo00/projects/power_to_go/power2go/power2go",
@@ -997,7 +997,7 @@
               "Properties": {
                 "Code": {
                   "S3Bucket": "bravosuperbucket",
-                  "S3Key": "serverless/django-graphQL-api/stg/1730760253748-2024-11-04T22:44:13.748Z/django-graphQL-api.zip"
+                  "S3Key": "serverless/django-graphQL-api/stg/1730806189301-2024-11-05T11:29:49.301Z/django-graphQL-api.zip"
                 },
                 "Handler": "wsgi_handler.handler",
                 "Runtime": "python3.9",
@@ -1152,7 +1152,7 @@
                 "ApiLambdaPermissionApiGateway"
               ]
             },
-            "ApiGatewayDeployment1730760251566": {
+            "ApiGatewayDeployment1730806187326": {
               "Type": "AWS::ApiGateway::Deployment",
               "Properties": {
                 "RestApiId": {
@@ -1300,7 +1300,7 @@
           ".serverless-wsgi"
         ],
         "artifact": "/home/julioaraujo00/projects/power_to_go/power2go/power2go/.serverless/django-graphQL-api.zip",
-        "artifactDirectoryName": "serverless/django-graphQL-api/stg/1730760253748-2024-11-04T22:44:13.748Z"
+        "artifactDirectoryName": "serverless/django-graphQL-api/stg/1730806189301-2024-11-05T11:29:49.301Z"
       }
     },
     "serviceRawFile": "org: bravodev\napp: power2go\nservice: django-graphQL-api\nuseDotenv: true\n\nprovider:\n  name: aws\n  region: ${env:AWS_REGION_NAME, 'us-east-1'}\n  runtime: python3.9\n  stage: ${opt:stage, 'stg'}\n  timeout: 30\n  memorySize: 2048\n  deploymentBucket:\n    name: bravosuperbucket \n\nplugins:\n  - serverless-wsgi\n  - serverless-python-requirements\n  - serverless-dotenv-plugin\nfunctions:\n  api:  \n    handler: wsgi_handler.handler\n    events:\n      - http: ANY /\n      - http: ANY /{proxy+}\n\ncustom:\n  wsgi:\n    app: myapi.wsgi.application\n\npackage:\n  exclude:\n    - venv/**\n    - __pycache__/*\n    - node_modules/**\n    - README.md\n    - pytest.ini\n    - conftest.py\n    - .venv\n    - .venv.example\n    - package.json\n    - package-lock.json",
@@ -1314,7 +1314,7 @@
       "code": "AWS_CLOUD_FORMATION_UPDATE_STACK_VALIDATION_ERROR"
     },
     "params": {},
-    "machineId": "654f788b17e9f5e4a2be460a7200015e",
+    "machineId": "894ce8297257a0c16df67c1181c979b6",
     "stage": "stg",
     "accessKeyV2": "<REDACTED>",
     "accessKeyV1": "<REDACTED>",

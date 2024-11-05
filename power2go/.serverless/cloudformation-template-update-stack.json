@@ -91,7 +91,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "bravosuperbucket",
-          "S3Key": "serverless/django-graphQL-api/stg/1730760253748-2024-11-04T22:44:13.748Z/django-graphQL-api.zip"
+          "S3Key": "serverless/django-graphQL-api/stg/1730806189301-2024-11-05T11:29:49.301Z/django-graphQL-api.zip"
         },
         "Handler": "wsgi_handler.handler",
         "Runtime": "python3.9",
@@ -246,7 +246,7 @@
         "ApiLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1730760251566": {
+    "ApiGatewayDeployment1730806187326": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
