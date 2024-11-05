@@ -52,11 +52,11 @@ class DeleteContractInput(graphene.InputObjectType):
       
 
 class Query(graphene.ObjectType):
-    users = graphene.List(UserType)
-    contracts = graphene.List(ContractType)
-    get_user = graphene.Field(UserType, id=graphene.ID(required=True))
-    get_contract = graphene.Field(ContractType, input=GetContractInput(required=True))
-    get_contract_without_nested_user = graphene.Field(
+    users_gql = graphene.List(UserType)
+    contracts_gql = graphene.List(ContractType)
+    get_user_gql = graphene.Field(UserType, id=graphene.ID(required=True))
+    get_contract_gql = graphene.Field(ContractType, input=GetContractInput(required=True))
+    get_contract_without_nested_user_gql = graphene.Field(
 				ContractType, 
 				input=GetContractWithoutNestedUserInput(required=True)
     )
@@ -65,25 +65,25 @@ class Query(graphene.ObjectType):
 				user_id=graphene.ID(required=True)
     )
     
-    def resolve_users(self, info, **kwargs):
+    def resolve_users_gql(self, info, **kwargs):
         return User.objects.all()
     
-    def resolve_contracts(self, info, **kwargs):
+    def resolve_contracts_gql(self, info, **kwargs):
         return Contract.objects.all()
     
-    def resolve_get_user(self, info, id):
+    def resolve_get_user_gql(self, info, id):
         try:
             return User.objects.get(id=id)
         except User.DoesNotExist:
             return None 
         
-    def resolve_get_contract(self, info, input):
+    def resolve_get_contract_gql(self, info, input):
         try:
             return Contract.objects.select_related('user').get(id=input.id)
         except Contract.DoesNotExist:
             return None 
     
-    def resolve_get_contract_without_nested_user(self, info, input):
+    def resolve_get_contract_without_nested_user_gql(self, info, input):
         try:
             contract = Contract.objects.get(id=input.id)
             contract.user_id
@@ -91,7 +91,7 @@ class Query(graphene.ObjectType):
         except Contract.DoesNotExist:
             return None 
     
-    def resolve_get_contracts_by_user(self, info, user_id):
+    def resolve_get_contracts_by_user_gql(self, info, user_id):
         try:
             return Contract.objects.filter(user_id=user_id)
         except User.DoesNotExist:
@@ -248,11 +248,11 @@ class DeleteContract(graphene.Mutation):
         
         
 class Mutation(graphene.ObjectType):
-    create_user = CreateUser.Field()
-    create_contract = CreateContract.Field()
-    update_user = UpdateUser.Field()
-    delete_user = DeleteUser.Field()
-    delete_contract = DeleteContract.Field()
-    update_contract = UpdateContract.Field()
+    create_user_gql = CreateUser.Field()
+    create_contract_gql = CreateContract.Field()
+    update_user_gql = UpdateUser.Field()
+    delete_user_gql = DeleteUser.Field()
+    delete_contract_gql = DeleteContract.Field()
+    update_contract_gql = UpdateContract.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
